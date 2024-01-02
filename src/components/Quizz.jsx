@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Quizz = () => {
   const [question, setQuestion] = useState([]);
@@ -10,6 +11,7 @@ const Quizz = () => {
   const [timer, setTimer] = useState(60);
   const [timerIntervalId, setTimerIntervalId] = useState("");
   const [status, setStatus] = useState("");
+  const navigate = useNavigate()
 
   useEffect(() => {
     fetch("./quiz.json")
@@ -31,7 +33,6 @@ const Quizz = () => {
         alert("Hết thời gian!!!");
       }
     };
-
   }, [timer]);
 
   const handleAnswerSelect = (questionId, selectedOption) => {
@@ -47,9 +48,9 @@ const Quizz = () => {
     setTimeout(() => {
       const quizScore = calculateScore(answer);
       setScore(quizScore);
-      const percentage = quizScore / question.length;
-      console.log(percentage)
-      const newStatus = percentage >= 0.5 ? "Vượt qua bài kiểm tra" : "Thất bại";
+      const percentage = (quizScore / question.length) * 100;
+      console.log(percentage);
+      const newStatus = percentage >= 50 ? "Vượt qua bài kiểm tra" : "Thất bại";
       setStatus(newStatus);
       setShowResult(true);
       setLoading(false);
@@ -66,6 +67,16 @@ const Quizz = () => {
     }
     return score;
   };
+
+  const restartQuiz = () => {
+    setAnswer([])
+    setScore(0)
+    setShowResult(false)
+    setLoading(false)
+    setTimer(60)
+    navigate("/quiz")
+
+  }
 
   return (
     <section className="pt-12 mt-12 md:w-9/12 w-[90%] mx-auto mb-8 flex flex-col sm:flex-row justify-between items-start">
@@ -116,8 +127,22 @@ const Quizz = () => {
           <div>
             <h3 className="text-xl sm:text-2xl font-medium">Điểm của bạn</h3>
             <div className="h-[220px] w-[220px] mx-auto mt-8 flex flex-col justify-center items-center border-2">
-              <h3 className={`text-xs ${status==="Vượt qua bài kiểm tra" ? "text-green-500" : "text-red-500"}`}>{status}</h3>
-              <h1>{score * 10} <span className="text-slate-800">/ 60</span></h1>
+              <h3
+                className={`text-xs ${
+                  status === "Vượt qua bài kiểm tra"
+                    ? "text-green-500"
+                    : "text-red-500"
+                }`}
+              >
+                {status}
+              </h3>
+              <h1>
+                {score * 10} <span className="text-slate-800">/ 60</span>
+              </h1>
+              <p>Thời gian: </p>
+              <button onClick={restartQuiz} className="bg-primary px-6 md:text-[1rem] mt-3 text-[.9rem] py-2 text-white rounded text-center">
+                Làm lại
+              </button>
             </div>
           </div>
         )}
